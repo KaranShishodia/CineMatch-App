@@ -1,0 +1,80 @@
+version: '3.9'
+
+# ── CineMatch Full Stack (Local Development) ──────────────────────────────────
+# Run:  docker compose up --build
+# Stop: docker compose down
+
+services:
+
+  # ── MongoDB ─────────────────────────────────────────────────────────────────
+  mongodb:
+    image: mongo:7
+    container_name: cinematch_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: cinematch
+
+  # ── Redis (optional caching) ────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: cinematch_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  # ── Node.js Backend ──────────────────────────────────────────────────────────
+  backend:
+    build: ./backend
+    container_name: cinematch_backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      MONGODB_URI: mongodb://mongodb:27017/cinematch
+      JWT_SECRET: ${JWT_SECRET:-dev_secret_change_in_prod}
+      JWT_EXPIRES_IN: 7d
+      TMDB_API_KEY: ${TMDB_API_KEY}
+      ML_SERVICE_URL: http://ml:8000
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: development
+      CLIENT_URL: http://localhost:3000
+    depends_on:
+      - mongodb
+      - redis
+
+  # ── Python ML Service ────────────────────────────────────────────────────────
+  ml:
+    build:
+      context: ./ml
+      args:
+        TMDB_API_KEY: ${TMDB_API_KEY}
+    container_name: cinematch_ml
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      TMDB_API_KEY: ${TMDB_API_KEY}
+      MODEL_PATH: /app/models
+    volumes:
+      - ml_models:/app/models  # persist trained model
+
+  # ── React Frontend (dev server) ──────────────────────────────────────────────
+  frontend:
+    build: ./frontend
+    container_name: cinematch_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_API_URL: http://localhost:5000/api
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
+  ml_models:

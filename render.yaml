@@ -1,0 +1,45 @@
+# render.yaml — Deploy CineMatch backend + ML on Render
+# docs: https://render.com/docs/render-yaml-reference
+
+services:
+
+  # ── Node.js Backend ──────────────────────────────────────────────────────────
+  - type: web
+    name: cinematch-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false          # set in Render dashboard
+      - key: JWT_SECRET
+        generateValue: true  # auto-generate a secure random value
+      - key: TMDB_API_KEY
+        sync: false
+      - key: ML_SERVICE_URL
+        value: https://cinematch-ml.onrender.com
+      - key: ANTHROPIC_API_KEY
+        sync: false          # optional, for CineBot AI
+      - key: CLIENT_URL
+        sync: false          # set to your Vercel frontend URL, e.g. https://cinematch.vercel.app
+
+  # ── Python ML Service ────────────────────────────────────────────────────────
+  - type: web
+    name: cinematch-ml
+    runtime: docker
+    rootDir: ml
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: TMDB_API_KEY
+        sync: false
+      - key: MODEL_PATH
+        value: /app/models
+    disk:
+      name: ml-models
+      mountPath: /app/models
+      sizeGB: 1
