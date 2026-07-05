@@ -2,6 +2,8 @@
 
 A full-stack, production-ready movie recommendation platform with content-based & collaborative filtering, JWT auth, watchlists, ratings, and a beautiful dark-mode UI.
 
+<img width="868" height="432" alt="Screenshot 2026-07-05 133834" src="https://github.com/user-attachments/assets/476e3ab3-9577-4d12-9fd0-d53f95e354b0" />
+
 ---
 
 ## 🏗️ Architecture Overview
