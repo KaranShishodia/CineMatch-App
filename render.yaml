@@ -22,24 +22,11 @@ services:
       - key: TMDB_API_KEY
         sync: false
       - key: ML_SERVICE_URL
-        value: https://cinematch-ml.onrender.com
+        value: https://your-username-cinematch-ml.hf.space   # replace with your actual HF Space URL
       - key: ANTHROPIC_API_KEY
         sync: false          # optional, for CineBot AI
       - key: CLIENT_URL
         sync: false          # set to your Vercel frontend URL, e.g. https://cinematch.vercel.app
 
-  # ── Python ML Service ────────────────────────────────────────────────────────
-  - type: web
-    name: cinematch-ml
-    runtime: docker
-    rootDir: ml
-    dockerfilePath: ./Dockerfile
-    envVars:
-      - key: TMDB_API_KEY
-        sync: false
-      - key: MODEL_PATH
-        value: /app/models
-    disk:
-      name: ml-models
-      mountPath: /app/models
-      sizeGB: 1
+# ── Python ML Service: deployed separately on Hugging Face Spaces (free) ──────
+# See ml/Dockerfile + ml/README.md — push the ml/ folder to a Docker-SDK Space.
